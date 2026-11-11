@@ -28,7 +28,10 @@ resource "btp_subaccount" "inventory" {
 }
 
 resource "btp_subaccount_entitlement" "inventory" {
-  for_each = local.inventory.entitlements
+  for_each = {
+    for key, value in local.inventory.entitlements : key => value
+    if key != "ewm-dev::APPLICATION_RUNTIME::MEMORY" && key != "ewm-dev::cloudfoundry::trial"
+  }
 
   subaccount_id = each.value.subaccount_id
   service_name  = each.value.service_name
@@ -36,8 +39,28 @@ resource "btp_subaccount_entitlement" "inventory" {
   amount        = try(each.value.amount, null)
 }
 
+resource "btp_subaccount_entitlement" "ewm_dev_runtime" {
+  subaccount_id = local.inventory.entitlements["ewm-dev::APPLICATION_RUNTIME::MEMORY"].subaccount_id
+  service_name  = local.inventory.entitlements["ewm-dev::APPLICATION_RUNTIME::MEMORY"].service_name
+  plan_name     = local.inventory.entitlements["ewm-dev::APPLICATION_RUNTIME::MEMORY"].plan_name
+  amount        = local.inventory.entitlements["ewm-dev::APPLICATION_RUNTIME::MEMORY"].amount
+
+  depends_on = [
+    btp_subaccount_entitlement.inventory["trial::APPLICATION_RUNTIME::MEMORY"],
+  ]
+}
+
+resource "btp_subaccount_entitlement" "ewm_dev_cloudfoundry" {
+  subaccount_id = local.inventory.entitlements["ewm-dev::cloudfoundry::trial"].subaccount_id
+  service_name  = local.inventory.entitlements["ewm-dev::cloudfoundry::trial"].service_name
+  plan_name     = local.inventory.entitlements["ewm-dev::cloudfoundry::trial"].plan_name
+}
+
 resource "btp_subaccount_environment_instance" "inventory" {
-  for_each = local.inventory.environment_instances
+  for_each = {
+    for key, value in local.inventory.environment_instances : key => value
+    if key != "ewm-dev"
+  }
 
   subaccount_id    = each.value.subaccount_id
   name             = each.value.name
@@ -46,6 +69,26 @@ resource "btp_subaccount_environment_instance" "inventory" {
   plan_name        = each.value.plan_name
   landscape_label  = each.value.landscape_label
   parameters       = jsonencode(each.value.parameters)
+}
+
+resource "btp_subaccount_environment_instance" "ewm_dev" {
+  subaccount_id    = local.inventory.environment_instances["ewm-dev"].subaccount_id
+  name             = local.inventory.environment_instances["ewm-dev"].name
+  environment_type = local.inventory.environment_instances["ewm-dev"].environment_type
+  service_name     = local.inventory.environment_instances["ewm-dev"].service_name
+  plan_name        = local.inventory.environment_instances["ewm-dev"].plan_name
+  landscape_label  = local.inventory.environment_instances["ewm-dev"].landscape_label
+  parameters       = jsonencode(local.inventory.environment_instances["ewm-dev"].parameters)
+
+  depends_on = [
+    btp_subaccount_entitlement.ewm_dev_runtime,
+    btp_subaccount_entitlement.ewm_dev_cloudfoundry,
+  ]
+}
+
+data "cloudfoundry_org" "ewm_dev" {
+  name       = "ewm-dev"
+  depends_on = [btp_subaccount_environment_instance.ewm_dev]
 }
 
 resource "btp_subaccount_service_instance" "inventory" {
@@ -65,13 +108,26 @@ resource "btp_subaccount_subscription" "inventory" {
 }
 
 resource "cloudfoundry_space" "inventory" {
-  for_each = local.inventory.cf_spaces
+  for_each = {
+    for key, value in local.inventory.cf_spaces : key => value
+    if key != "ewm-dev"
+  }
 
   name        = each.value.name
   org         = each.value.org
   allow_ssh   = each.value.allow_ssh
   labels      = length(each.value.labels) > 0 ? each.value.labels : null
   annotations = length(each.value.annotations) > 0 ? each.value.annotations : null
+}
+
+resource "cloudfoundry_space" "ewm_dev" {
+  name        = local.inventory.cf_spaces["ewm-dev"].name
+  org         = data.cloudfoundry_org.ewm_dev.id
+  allow_ssh   = local.inventory.cf_spaces["ewm-dev"].allow_ssh
+  labels      = length(local.inventory.cf_spaces["ewm-dev"].labels) > 0 ? local.inventory.cf_spaces["ewm-dev"].labels : null
+  annotations = length(local.inventory.cf_spaces["ewm-dev"].annotations) > 0 ? local.inventory.cf_spaces["ewm-dev"].annotations : null
+
+  depends_on = [cloudfoundry_org_quota.ewm_dev]
 }
 
 resource "cloudfoundry_org_role" "inventory" {
@@ -91,7 +147,10 @@ resource "cloudfoundry_space_role" "inventory" {
 }
 
 resource "cloudfoundry_org_quota" "inventory" {
-  for_each = local.inventory.cf_org_quotas
+  for_each = {
+    for key, value in local.inventory.cf_org_quotas : key => value
+    if key != "ewm-dev"
+  }
 
   name                     = each.value.name
   allow_paid_service_plans = each.value.allow_paid_service_plans
@@ -106,4 +165,15 @@ resource "cloudfoundry_org_quota" "inventory" {
   total_route_ports        = try(each.value.total_route_ports, null)
   total_app_log_rate_limit = try(each.value.total_app_log_rate_limit, null)
   orgs                     = each.value.orgs
+}
+
+resource "cloudfoundry_org_quota" "ewm_dev" {
+  name                     = local.inventory.cf_org_quotas["ewm-dev"].name
+  allow_paid_service_plans = local.inventory.cf_org_quotas["ewm-dev"].allow_paid_service_plans
+  instance_memory          = local.inventory.cf_org_quotas["ewm-dev"].instance_memory
+  total_memory             = local.inventory.cf_org_quotas["ewm-dev"].total_memory
+  total_app_instances      = local.inventory.cf_org_quotas["ewm-dev"].total_app_instances
+  total_routes             = local.inventory.cf_org_quotas["ewm-dev"].total_routes
+  total_services           = local.inventory.cf_org_quotas["ewm-dev"].total_services
+  orgs                     = [data.cloudfoundry_org.ewm_dev.id]
 }

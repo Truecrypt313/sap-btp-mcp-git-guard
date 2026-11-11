@@ -11,6 +11,22 @@ Read-only discovery used the existing BTP CLI session and CF CLI/API session. SA
 - Result: 154 imports succeeded (153 in the batch plus TEST subaccount test-import); 0 failed. The pre-existing DEV subaccount was not re-imported. State contains 155 resources total.
 - Final plan: `No changes` (0 add / 0 change / 0 destroy). No `apply` was run.
 
+## Proposed EWM DEV runtime quota split (not applied)
+
+The live BTP MCP capacity and assignment views show `APPLICATION_RUNTIME/MEMORY` in `us10` with total amount 4, all 4 assigned to trial, and 0 remaining. The trial subaccount quota view also shows 4. The current CF CLI read confirms the trial organization quota is 4096 MB; its only space (`dev`) has no applications or service instances. The `ewm-dev` subaccount has no service entitlements or CF environment instances, and no CF organization named `ewm-dev` is currently visible.
+
+The split is therefore a redistribution within the observed 4 GB total, not a request for additional trial capacity. After BTP CLI reauthentication, a full Terraform plan with refresh completed successfully. It reports 5 additions, 2 in-place changes, and 0 deletions. The local state remained unchanged at 158 resources.
+
+| Assignment | Current | Proposed |
+|---|---:|---:|
+| `APPLICATION_RUNTIME/MEMORY` — trial | 4 GB | 3 GB |
+| `APPLICATION_RUNTIME/MEMORY` — ewm-dev | 0 GB | 1 GB |
+| Combined assignment | 4 GB | 4 GB |
+| CF Org quota — trial | 4096 MB | 3072 MB |
+| CF Org quota — ewm-dev | Not present | 1024 MB |
+
+The planned ewm-dev CF quota allows one 1 GB app instance and one route, no service instances, and no paid service plans. The Cloud Foundry entitlement and trial environment instance are included for ewm-dev. Terraform orders the memory reduction on trial before assigning the released 1 GB to ewm-dev. The new CF organization GUID is not known yet: Terraform resolves the organization by name after the BTP environment instance is provisioned, without inventing an ID. The `dev` space is configured with SSH disabled. No CF roles are added; a Space Developer assignment will be needed before a user can deploy.
+
 ## Account hierarchy
 
 - Global Account `bc5c4931trial-ga`, GUID `96118823-6eff-42d6-9733-c876a67de4fe`.

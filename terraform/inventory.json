@@ -1,5 +1,15 @@
 {
   "cf_org_quotas": {
+    "ewm-dev": {
+      "allow_paid_service_plans": false,
+      "instance_memory": 1024,
+      "name": "ewm-dev-runtime-1gb",
+      "org_reference": "ewm-dev",
+      "total_app_instances": 1,
+      "total_memory": 1024,
+      "total_routes": 1,
+      "total_services": 0
+    },
     "shared": {
       "allow_paid_service_plans": true,
       "instance_memory": 0,
@@ -24,7 +34,7 @@
         "bf95b984-7df4-405d-a29e-40b1966f93d4"
       ],
       "total_app_instances": 20,
-      "total_memory": 4096,
+      "total_memory": 3072,
       "total_routes": 10,
       "total_services": 400
     }
@@ -130,6 +140,13 @@
       "observed_id": "3db5ea60-6459-4bc6-bcc8-fdea44c81f1f",
       "observed_suspended": false,
       "org": "bf95b984-7df4-405d-a29e-40b1966f93d4"
+    },
+    "ewm-dev": {
+      "allow_ssh": false,
+      "annotations": {},
+      "labels": {},
+      "name": "dev",
+      "org_reference": "ewm-dev"
     }
   },
   "directories": {
@@ -478,8 +495,19 @@
       "service_name": "service-manager",
       "subaccount_id": "a000e898-12fb-41cb-a685-bc5aa882a274"
     },
+    "ewm-dev::APPLICATION_RUNTIME::MEMORY": {
+      "amount": 1,
+      "plan_name": "MEMORY",
+      "service_name": "APPLICATION_RUNTIME",
+      "subaccount_id": "b08d178b-0cde-4ed5-a79f-da688dc9214d"
+    },
+    "ewm-dev::cloudfoundry::trial": {
+      "plan_name": "trial",
+      "service_name": "cloudfoundry",
+      "subaccount_id": "b08d178b-0cde-4ed5-a79f-da688dc9214d"
+    },
     "trial::APPLICATION_RUNTIME::MEMORY": {
-      "amount": 4,
+      "amount": 3,
       "observed_category": "PLATFORM",
       "observed_quota": 4,
       "observed_unique_identifier": "NA",
@@ -1222,6 +1250,17 @@
       "plan_name": "trial",
       "service_name": "cloudfoundry",
       "subaccount_id": "a000e898-12fb-41cb-a685-bc5aa882a274"
+    },
+    "ewm-dev": {
+      "environment_type": "cloudfoundry",
+      "landscape_label": "cf-us10-001",
+      "name": "ewm-dev",
+      "parameters": {
+        "instance_name": "ewm-dev"
+      },
+      "plan_name": "trial",
+      "service_name": "cloudfoundry",
+      "subaccount_id": "b08d178b-0cde-4ed5-a79f-da688dc9214d"
     },
     "trial": {
       "environment_type": "cloudfoundry",

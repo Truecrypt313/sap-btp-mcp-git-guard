@@ -33,7 +33,9 @@ cd apps/ewm-integration-demo
 npm start
 ```
 
-CAP startet im Entwicklungsmodus, lädt die CSV-Daten in die lokale SQLite-Datenbank und stellt den Service unter `http://localhost:4004/odata/v4/warehouse` bereit. Mit `Ctrl+C` wird der Server beendet.
+CAP lädt die CSV-Daten in die lokale SQLite-Datenbank und stellt den Service unter `http://localhost:4004/odata/v4/warehouse` bereit. Mit `Ctrl+C` wird der Server beendet.
+
+Für Live Reload kann stattdessen `npm run watch` verwendet werden.
 
 ## OData-Beispiele
 
@@ -68,6 +70,18 @@ curl --get 'http://localhost:4004/odata/v4/warehouse/GoodsReceipts' \
 
 Die Collection ist read-only. CAP weist Schreibzugriffe auf `GoodsReceipts` zurück.
 
+## Für Cloud Foundry vorbereitet
+
+`manifest.yml` ist für eine einzelne CAP-Instanz mit 512 MB vorbereitet und benötigt keine Service-Instanzen. Es wurde noch kein BTP-Deployment ausgeführt. Erst nach Review und Merge der Infrastrukturänderungen sowie deren freigegebener Anwendung kann aus diesem Verzeichnis deployed werden:
+
+```bash
+cf target -o ewm-dev
+cf target -s dev
+cf push
+```
+
+Der deployende Benutzer muss im Space `dev` die Rolle Space Developer haben. Diese Demo verwendet eine In-Memory-SQLite-Datenbank; Seed-Daten werden beim Start geladen und sind nicht persistent. Das ist nur für eine technische Demo gedacht, nicht als produktiver Datenbankbetrieb.
+
 ## Datenmodell
 
 | Feld | Typ | Bedeutung |
@@ -95,5 +109,7 @@ Die automatisierten Node.js-Tests starten einen lokalen CAP-Prozess mit SQLite u
 OData V4 bietet eine standardisierte Schnittstelle für SAP- und Non-SAP-Clients. In einer späteren Ausbaustufe könnte SAP Integration Suite Nachrichten aus einem Quellsystem entgegennehmen, transformieren und an einen produktiven CAP-Service weiterleiten. Die Suite und eine solche Verbindung sind hier **nicht** eingerichtet.
 
 **Umgesetzt:** lokales CAP-Modell und Service, OData-V4-Lesezugriff, CSV-Testdaten, SQLite und HTTP-Integrationstests.
+
+**Vorbereitet, aber nicht ausgeführt:** ein CF-Manifest für den späteren Demo-Deploy.
 
 **Nicht umgesetzt:** echte SAP-EWM-Integration, BTP-Deployment, produktive Authentifizierung oder Autorisierung, SAP Integration Suite und Azure-Ressourcen.
