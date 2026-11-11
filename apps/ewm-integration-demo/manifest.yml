@@ -1,0 +1,5 @@
+---
+applications:
+  - name: ewm-integration-demo
+    memory: 512M
+    instances: 1
