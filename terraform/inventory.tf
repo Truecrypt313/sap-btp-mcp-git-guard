@@ -15,10 +15,14 @@ resource "btp_directory" "inventory" {
 resource "btp_subaccount" "inventory" {
   for_each = local.inventory.subaccounts
 
-  name                  = each.value.name
-  subdomain             = each.value.subdomain
-  region                = each.value.region
-  parent_id             = try(btp_directory.inventory[each.value.parent_directory].id, null)
+  name      = each.value.name
+  subdomain = each.value.subdomain
+  region    = each.value.region
+  parent_id = (
+    try(each.value.parent_directory, null) == null
+    ? null
+    : btp_directory.inventory[each.value.parent_directory].id
+  )
   skip_auto_entitlement = try(each.value.skip_auto_entitlement, null)
   labels                = try(each.value.labels, null)
 }
