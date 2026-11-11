@@ -19,4 +19,8 @@ resource "btp_subaccount" "dev_project_abc" {
   name      = "DEV Project ABC"
   subdomain = "dev-project-abc-906890de-f71b-1515-31a1-672a2146ccdb"
   region    = "us10"
+  labels = {
+    costcenter = ["12345"]
+    stage      = ["DEV"]
+  }
 }
