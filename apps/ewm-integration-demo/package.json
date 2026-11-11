@@ -7,7 +7,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "start": "cds serve",
+    "start": "cds-serve",
     "watch": "cds watch",
     "test": "node --test"
   },

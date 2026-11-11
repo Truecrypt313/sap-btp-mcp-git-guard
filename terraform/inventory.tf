@@ -33,6 +33,8 @@ resource "btp_subaccount_entitlement" "inventory" {
     if key != "ewm-dev::APPLICATION_RUNTIME::MEMORY" && key != "ewm-dev::cloudfoundry::trial"
   }
 
+  depends_on = [cloudfoundry_org_quota.inventory]
+
   subaccount_id = each.value.subaccount_id
   service_name  = each.value.service_name
   plan_name     = each.value.plan_name
