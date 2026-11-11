@@ -4,13 +4,27 @@ locals {
 
 provider "cloudfoundry" {}
 
+resource "btp_directory" "inventory" {
+  for_each = local.inventory.directories
+
+  name      = each.value.name
+  parent_id = each.value.parent_id
+  features  = each.value.features
+}
+
 resource "btp_subaccount" "inventory" {
   for_each = local.inventory.subaccounts
 
   name      = each.value.name
   subdomain = each.value.subdomain
   region    = each.value.region
-  labels    = each.value.labels
+  parent_id = (
+    try(each.value.parent_directory, null) == null
+    ? null
+    : btp_directory.inventory[each.value.parent_directory].id
+  )
+  skip_auto_entitlement = try(each.value.skip_auto_entitlement, null)
+  labels                = try(each.value.labels, null)
 }
 
 resource "btp_subaccount_entitlement" "inventory" {

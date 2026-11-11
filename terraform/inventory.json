@@ -132,6 +132,15 @@
       "org": "bf95b984-7df4-405d-a29e-40b1966f93d4"
     }
   },
+  "directories": {
+    "ewm-project": {
+      "features": [
+        "DEFAULT"
+      ],
+      "name": "EWM-Project",
+      "parent_id": "96118823-6eff-42d6-9733-c876a67de4fe"
+    }
+  },
   "entitlements": {
     "dev::alert-notification::standard": {
       "observed_category": "ELASTIC_SERVICE",
@@ -1249,6 +1258,20 @@
     }
   },
   "subaccounts": {
+    "ewm-dev": {
+      "name": "ewm-dev",
+      "parent_directory": "ewm-project",
+      "region": "us10",
+      "skip_auto_entitlement": true,
+      "subdomain": "ewm-dev-96118823"
+    },
+    "ewm-test": {
+      "name": "ewm-test",
+      "parent_directory": "ewm-project",
+      "region": "us10",
+      "skip_auto_entitlement": true,
+      "subdomain": "ewm-test-96118823"
+    },
     "test": {
       "labels": {
         "costcenter": [
