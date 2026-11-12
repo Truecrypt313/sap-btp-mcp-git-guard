@@ -1,15 +1,5 @@
 {
   "cf_org_quotas": {
-    "ewm-dev": {
-      "allow_paid_service_plans": false,
-      "instance_memory": 1024,
-      "name": "ewm-dev-runtime-1gb",
-      "org_reference": "ewm-dev",
-      "total_app_instances": 1,
-      "total_memory": 1024,
-      "total_routes": 1,
-      "total_services": 0
-    },
     "shared": {
       "allow_paid_service_plans": true,
       "instance_memory": 0,

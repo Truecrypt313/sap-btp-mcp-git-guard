@@ -33,8 +33,6 @@ resource "btp_subaccount_entitlement" "inventory" {
     if key != "ewm-dev::APPLICATION_RUNTIME::MEMORY" && key != "ewm-dev::cloudfoundry::trial"
   }
 
-  depends_on = [cloudfoundry_org_quota.inventory]
-
   subaccount_id = each.value.subaccount_id
   service_name  = each.value.service_name
   plan_name     = each.value.plan_name
@@ -128,8 +126,6 @@ resource "cloudfoundry_space" "ewm_dev" {
   allow_ssh   = local.inventory.cf_spaces["ewm-dev"].allow_ssh
   labels      = length(local.inventory.cf_spaces["ewm-dev"].labels) > 0 ? local.inventory.cf_spaces["ewm-dev"].labels : null
   annotations = length(local.inventory.cf_spaces["ewm-dev"].annotations) > 0 ? local.inventory.cf_spaces["ewm-dev"].annotations : null
-
-  depends_on = [cloudfoundry_org_quota.ewm_dev]
 }
 
 resource "cloudfoundry_org_role" "inventory" {
@@ -149,10 +145,7 @@ resource "cloudfoundry_space_role" "inventory" {
 }
 
 resource "cloudfoundry_org_quota" "inventory" {
-  for_each = {
-    for key, value in local.inventory.cf_org_quotas : key => value
-    if key != "ewm-dev"
-  }
+  for_each = local.inventory.cf_org_quotas
 
   name                     = each.value.name
   allow_paid_service_plans = each.value.allow_paid_service_plans
@@ -167,15 +160,8 @@ resource "cloudfoundry_org_quota" "inventory" {
   total_route_ports        = try(each.value.total_route_ports, null)
   total_app_log_rate_limit = try(each.value.total_app_log_rate_limit, null)
   orgs                     = each.value.orgs
-}
 
-resource "cloudfoundry_org_quota" "ewm_dev" {
-  name                     = local.inventory.cf_org_quotas["ewm-dev"].name
-  allow_paid_service_plans = local.inventory.cf_org_quotas["ewm-dev"].allow_paid_service_plans
-  instance_memory          = local.inventory.cf_org_quotas["ewm-dev"].instance_memory
-  total_memory             = local.inventory.cf_org_quotas["ewm-dev"].total_memory
-  total_app_instances      = local.inventory.cf_org_quotas["ewm-dev"].total_app_instances
-  total_routes             = local.inventory.cf_org_quotas["ewm-dev"].total_routes
-  total_services           = local.inventory.cf_org_quotas["ewm-dev"].total_services
-  orgs                     = [data.cloudfoundry_org.ewm_dev.id]
+  lifecycle {
+    ignore_changes = [total_memory]
+  }
 }
