@@ -13,19 +13,21 @@ Read-only discovery used the existing BTP CLI session and CF CLI/API session. SA
 
 ## Proposed EWM DEV runtime quota split (not applied)
 
-The live BTP MCP capacity and assignment views show `APPLICATION_RUNTIME/MEMORY` in `us10` with total amount 4, all 4 assigned to trial, and 0 remaining. The trial subaccount quota view also shows 4. The current CF CLI read confirms the trial organization quota is 4096 MB; its only space (`dev`) has no applications or service instances. The `ewm-dev` subaccount has no service entitlements or CF environment instances, and no CF organization named `ewm-dev` is currently visible.
+The live BTP MCP capacity and assignment views show `APPLICATION_RUNTIME/MEMORY` in `us10` with total amount 4, all 4 assigned to trial, and 0 remaining. The trial subaccount quota view also shows 4. The current CF CLI read confirms the trial organization quota is 4096 MB; its only space (`dev`) has no applications or service instances. A partial apply created the Cloud Foundry trial entitlement for `ewm-dev`; its runtime-memory entitlement and CF environment instance are not yet present in state. No CF organization named `ewm-dev` is currently visible.
 
-The split is therefore a redistribution within the observed 4 GB total, not a request for additional trial capacity. After BTP CLI reauthentication, a full Terraform plan with refresh completed successfully. It reports 5 additions, 2 in-place changes, and 0 deletions. The local state remained unchanged at 158 resources.
+The split is therefore a redistribution within the observed 4 GB total, not a request for additional trial capacity. After the partial apply, the full refreshed Terraform plan reports 3 additions, 1 in-place change, and 0 deletions. The local state contains 159 resources and remained unchanged during planning.
 
-| Assignment | Current | Proposed |
+| Assignment | Current | Terraform-managed target |
 |---|---:|---:|
 | `APPLICATION_RUNTIME/MEMORY` — trial | 4 GB | 3 GB |
 | `APPLICATION_RUNTIME/MEMORY` — ewm-dev | 0 GB | 1 GB |
 | Combined assignment | 4 GB | 4 GB |
-| CF Org quota — trial | 4096 MB | 3072 MB |
-| CF Org quota — ewm-dev | Not present | 1024 MB |
+| CF Org quota — trial | 4096 MB | Unchanged; not written by Terraform |
+| CF Org quota — ewm-dev | Org not provisioned | Not managed by Terraform |
 
-The planned ewm-dev CF quota allows one 1 GB app instance and one route, no service instances, and no paid service plans. The Cloud Foundry entitlement and trial environment instance are included for ewm-dev. Terraform orders the memory reduction on trial before assigning the released 1 GB to ewm-dev. The new CF organization GUID is not known yet: Terraform resolves the organization by name after the BTP environment instance is provisioned, without inventing an ID. The `dev` space is configured with SSH disabled. No CF roles are added; a Space Developer assignment will be needed before a user can deploy.
+No Cloud Foundry organization quota is managed for ewm-dev. The existing trial/shared quota resources stay in Terraform state, but `total_memory` is ignored for the quota resource group to prevent CF quota PATCH requests. The BTP runtime entitlements remain Terraform-managed independently. No automatic synchronization between BTP runtime entitlement memory and CF organization quota is assumed. The actual trial quota remains 4096 MB as last read; the ewm-dev organization does not exist yet, so its effective quota cannot be verified. After the CF environment and organization are provisioned, read the assigned quotas with `cf orgs` and `cf org-quota <quota-name>`; do not infer them from the BTP entitlement.
+
+The Cloud Foundry entitlement and trial environment instance are included for ewm-dev. Terraform resolves the new CF organization by name after the BTP environment instance is provisioned, without inventing an ID. The `dev` space is configured with SSH disabled. No CF roles are added; a Space Developer assignment will be needed before a user can deploy.
 
 ## Account hierarchy
 
