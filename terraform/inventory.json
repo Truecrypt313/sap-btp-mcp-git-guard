@@ -1301,6 +1301,13 @@
       "skip_auto_entitlement": true,
       "subdomain": "ewm-test-96118823"
     },
+    "opencode-test": {
+      "name": "opencode-test",
+      "parent_directory": "ewm-project",
+      "region": "us10",
+      "skip_auto_entitlement": true,
+      "subdomain": "opencode-test-96118823"
+    },
     "test": {
       "labels": {
         "costcenter": [
